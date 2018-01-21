@@ -13,7 +13,7 @@ public class pahotest {
         String topic        = "test/status";
         String content      = "Message from MqttPublishSample"; /*now i change smt */
         int qos             = 2;
-        String broker       = "tcp://wolke.xcds.at:8883";
+        String broker       = "tcp://10.0.0.103:1883";
         String clientId     = "JavaSample";
         MemoryPersistence persistence = new MemoryPersistence();
 
