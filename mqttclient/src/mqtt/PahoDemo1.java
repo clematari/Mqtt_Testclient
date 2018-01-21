@@ -15,9 +15,14 @@ public class PahoDemo1 implements MqttCallback {
 	final static int ausschalten = 	3;
 	final static int umschalten = 	6;
 	
+	final static int dim_einschalten 	= 12;
+	final static int dim_ausschalten 	= 4;
+	final static int dim_umschalten 	= 11;
+	final static int dim_info 			= 1;
+	
 	final static int amd0 = 	(byte)0x40;
-	final static int amd1 = 	(byte)0x41;
-
+	final static int dim0 = 	(byte)0xA0;
+	
 	byte[]	testb = new byte[20];
 	
 	MqttClient client;
@@ -76,6 +81,9 @@ public void messageArrived(String topic, MqttMessage message)
 			if (topicString.length == 4) {
 				amdNr = Integer.parseInt(topicString[2]);
 				Chan = Integer.parseInt(topicString[3]);
+				
+				amdNr = amd0 + amdNr;
+				
 								
 				if (outmessage.equals("0")) action = ausschalten;
 				if (outmessage.equals("1")) action = einschalten;
@@ -83,7 +91,7 @@ public void messageArrived(String topic, MqttMessage message)
 				if (outmessage.equals("3")) action = info;
 				
 				
-				amdNr = amdNr + (byte)0x40;
+				
 				
 				testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 				com2phc.PrintInOut (testb);
@@ -91,6 +99,26 @@ public void messageArrived(String topic, MqttMessage message)
 					System.out.println (String.format("%02X",testb[testb.length-12])); 
 				}
 			}
+			
+		case "dim":
+			
+			amdNr = Integer.parseInt(topicString[2]);
+			Chan = Integer.parseInt(topicString[3]);
+			
+			amdNr = amdNr + dim0; 
+			
+			if (outmessage.equals("0")) action = dim_ausschalten;
+			if (outmessage.equals("1")) action = dim_einschalten;
+			if (outmessage.equals("2")) action = dim_umschalten;
+			if (outmessage.equals("3")) action = dim_info;
+			
+			testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			com2phc.PrintInOut (testb);
+			if (outmessage.equals("3")) {
+				System.out.println (String.format("%02X",testb[testb.length-12])); 
+			}			
+			
+			
 		break;
 	}
 			
