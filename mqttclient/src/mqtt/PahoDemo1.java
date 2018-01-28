@@ -35,19 +35,22 @@ public static void main(String[] args) {
 }
 
 public void doDemo() {
-	String topic        = "phc/amd/";
+	String topic = "phc/";
 	
 	
 	try {
-        client = new MqttClient("tcp://10.0.0.103:1883", topic);
+        client = new MqttClient("tcp://10.0.0.103:1883",topic);
         client.connect();
         System.out.println (MqttClient.generateClientId());
         client.setCallback(this);
         client.subscribe(topic + "#");
         MqttMessage message = new MqttMessage();
-        message.setPayload("jPHC Gateway ready"
-                .getBytes());
-        client.publish(topic, message);
+        message.setPayload("jPHCready".getBytes());
+        /*client.publish(topic, message); */
+        System.out.println ("after publish");
+        
+        topic = "phc/amd/";
+        
     } catch (MqttException e) {
         e.printStackTrace();
     }
@@ -55,7 +58,7 @@ public void doDemo() {
 
 public void connectionLost(Throwable cause) {
     // TODO Auto-generated method stub
-
+	System.out.println ("Connection lost");
 }
 
 public void messageArrived(String topic, MqttMessage message)
@@ -74,11 +77,13 @@ public void messageArrived(String topic, MqttMessage message)
     int action 	= 0;
     int amdNr 	= 0;
     int Chan 	= 0;
+    
+    System.out.println(topicString[1]);
    
 	switch (topicString[1]) {
 
-		case "amd":
-			if (topicString.length == 4) {
+		case "amd":{
+			
 				amdNr = Integer.parseInt(topicString[2]);
 				Chan = Integer.parseInt(topicString[3]);
 				
@@ -98,9 +103,10 @@ public void messageArrived(String topic, MqttMessage message)
 				if (outmessage.equals("3")) {
 					System.out.println (String.format("%02X",testb[testb.length-12])); 
 				}
-			}
-			
-		case "dim":
+					}
+		break;	
+		
+		case "dim":{
 			
 			amdNr = Integer.parseInt(topicString[2]);
 			Chan = Integer.parseInt(topicString[3]);
@@ -112,13 +118,15 @@ public void messageArrived(String topic, MqttMessage message)
 			if (outmessage.equals("2")) action = dim_umschalten;
 			if (outmessage.equals("3")) action = dim_info;
 			
-			testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			
 			com2phc.PrintInOut (testb);
-			if (outmessage.equals("3")) {
+				if (outmessage.equals("3")) {
 				System.out.println (String.format("%02X",testb[testb.length-12])); 
-			}			
+				}	
 			
 			
+		}
 		break;
 	}
 			

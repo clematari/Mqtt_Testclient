@@ -29,7 +29,7 @@ public class PHC_Dimmer_Testclass {
 
 	public void doDemo() {
 		String topic        = "phc/dim/2/1";
-		String outmessage ="3";
+		String outmessage ="1";
 		
 		String[] topicString = topic.split("/");
 		
