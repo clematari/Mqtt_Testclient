@@ -150,6 +150,14 @@ public class com2phc {
     	 System.out.println("");
     } 
 	
+	public static byte getPHCStatusByte(byte[] in) {
+	byte outbyte = 0;
+	
+	outbyte = in[in.length -12];
+	
+	return outbyte;
+	}
+	
 	public static int unsignedToBytes(byte b) {
 		    return b & 0xFF;
 		  }

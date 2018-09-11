@@ -26,6 +26,7 @@ public class PahoDemo1 implements MqttCallback {
 	byte[]	testb = new byte[20];
 	
 	MqttClient client;
+	
 
 public PahoDemo1() {
 }
@@ -36,6 +37,7 @@ public static void main(String[] args) {
 
 public void doDemo() {
 	String topic = "phc/";
+
 	
 	
 	try {
@@ -47,14 +49,37 @@ public void doDemo() {
         MqttMessage message = new MqttMessage();
         message.setPayload("jPHCready".getBytes());
         /*client.publish(topic, message); */
-        System.out.println ("after publish");
+        System.out.println ("before client2");
         
-        topic = "phc/amd/";
+
         
     } catch (MqttException e) {
         e.printStackTrace();
     }
 }
+
+public void sendStatusAnswer(String topic2, byte[] outb) {
+
+	MqttClient client2;
+
+
+
+	try {
+	    client2 = new MqttClient("tcp://10.0.0.103:1883",topic2);
+	    client2.connect();
+	    
+	    MqttMessage message2 = new MqttMessage();
+	    message2.setPayload(outb);
+	    client2.publish(topic2, message2);
+	    client2.disconnect();
+	  
+    
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+}
+
+
 
 public void connectionLost(Throwable cause) {
     // TODO Auto-generated method stub
@@ -77,6 +102,8 @@ public void messageArrived(String topic, MqttMessage message)
     int action 	= 0;
     int amdNr 	= 0;
     int Chan 	= 0;
+    byte[] PHCStatusByte = new byte[1];
+    String  topic_answer="";
     
     System.out.println(topicString[1]);
    
@@ -100,6 +127,14 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 				com2phc.PrintInOut (testb);
+				
+				
+				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
+				topic_answer= "phc/status/amd/"+(amdNr-amd0)+"/"+Chan;
+				
+		
+				sendStatusAnswer(topic_answer, PHCStatusByte);
+				
 				if (outmessage.equals("3")) {
 					System.out.println (String.format("%02X",testb[testb.length-12])); 
 				}
