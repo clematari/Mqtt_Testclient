@@ -3,6 +3,7 @@ package mqtt;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -23,6 +24,10 @@ public class PahoDemo1 implements MqttCallback {
 	final static int amd0 = 	(byte)0x40;
 	final static int dim0 = 	(byte)0xA0;
 	
+	final static String Mqtt_adr = "tcp://10.0.0.25:1883";
+	final static String Mqtt_user = "openhabian";
+	final static String Mqtt_pwd = "3313";
+	
 	byte[]	testb = new byte[20];
 	
 	MqttClient client;
@@ -41,14 +46,16 @@ public void doDemo() {
 	
 	
 	try {
-        client = new MqttClient("tcp://10.0.0.103:1883",topic);
-        client.connect();
+        client = new MqttClient(Mqtt_adr,topic);
+	    MqttConnectOptions connOpts = new MqttConnectOptions();
+        connOpts.setUserName(Mqtt_user);
+        connOpts.setPassword(Mqtt_pwd.toCharArray());
+        client.connect(connOpts);
         System.out.println (MqttClient.generateClientId());
         client.setCallback(this);
         client.subscribe(topic + "#");
         MqttMessage message = new MqttMessage();
         message.setPayload("jPHCready".getBytes());
-        /*client.publish(topic, message); */
         System.out.println ("before client2");
         
 
@@ -65,8 +72,11 @@ public void sendStatusAnswer(String topic2, byte[] outb) {
 
 
 	try {
-	    client2 = new MqttClient("tcp://10.0.0.103:1883",topic2);
-	    client2.connect();
+	    client2 = new MqttClient(Mqtt_adr,topic2);
+	    MqttConnectOptions connOpts2 = new MqttConnectOptions();
+        connOpts2.setUserName(Mqtt_user);
+        connOpts2.setPassword(Mqtt_pwd.toCharArray());
+        client2.connect(connOpts2);
 	    
 	    MqttMessage message2 = new MqttMessage();
 	    message2.setPayload(outb);

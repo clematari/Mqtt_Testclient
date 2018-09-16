@@ -13,13 +13,16 @@ public class pahotest {
         String topic        = "test/status";
         String content      = "Message from MqttPublishSample"; /*now i change smt */
         int qos             = 2;
-        String broker       = "tcp://10.0.0.103:1883";
+        String broker       = "tcp://10.0.0.25:1883";
         String clientId     = "JavaSample";
         MemoryPersistence persistence = new MemoryPersistence();
 
         try {
             MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
+                       
             MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts.setUserName("openhabian");
+            connOpts.setPassword("3313".toCharArray());
             connOpts.setCleanSession(true);
             System.out.println("Connecting to broker: "+broker);
             sampleClient.connect(connOpts);
