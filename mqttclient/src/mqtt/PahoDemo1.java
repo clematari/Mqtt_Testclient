@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.nio.charset.StandardCharsets;
 import phc.jgateway.com2phc;
 
 public class PahoDemo1 implements MqttCallback {
@@ -89,7 +90,9 @@ public void sendStatusAnswer(String topic2, byte[] outb) {
 		}
 }
 
-
+public static boolean checkBit(byte x, int k) {
+    return (x & 1 << k) != 0;
+}
 
 public void connectionLost(Throwable cause) {
     // TODO Auto-generated method stub
@@ -114,6 +117,7 @@ public void messageArrived(String topic, MqttMessage message)
     int Chan 	= 0;
     byte[] PHCStatusByte = new byte[1];
     String  topic_answer="";
+    boolean PHCBit;
     
     System.out.println(topicString[1]);
    
@@ -136,18 +140,25 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				
 				testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
-				com2phc.PrintInOut (testb);
 				
+	/* com2phc.PrintInOut (testb); */
 				
 				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
+				String PHCStatusStr = String.valueOf(PHCStatusByte[0]);
+
+				topic_answer= "phc/status/amd/"+(amdNr-amd0);
+				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
+				
 				topic_answer= "phc/status/amd/"+(amdNr-amd0)+"/"+Chan;
 				
 		
-				sendStatusAnswer(topic_answer, PHCStatusByte);
+				if (checkBit(PHCStatusByte[0],Chan))
+					{
+						sendStatusAnswer(topic_answer, "ON".getBytes());}
+				else
+					{ 
+						sendStatusAnswer(topic_answer, "OFF".getBytes());}
 				
-				if (outmessage.equals("3")) {
-					System.out.println (String.format("%02X",testb[testb.length-12])); 
-				}
 					}
 		break;	
 		
@@ -165,12 +176,9 @@ public void messageArrived(String topic, MqttMessage message)
 			
 			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 			
-			com2phc.PrintInOut (testb);
-				if (outmessage.equals("3")) {
-				System.out.println (String.format("%02X",testb[testb.length-12])); 
-				}	
-			
-			
+ /* com2phc.PrintInOut (testb); */
+
+				
 		}
 		break;
 	}
