@@ -16,7 +16,7 @@ public class com2phc {
      	
     	
     	sb = Convert2PHC(data);
-    	PrintInOut (sb);
+    	/* PrintInOut (sb); */
     	
     	Socket socket = null;
         PrintWriter out = null;
@@ -39,10 +39,19 @@ public class com2phc {
         socket.getOutputStream().write(sb);
         socket.getOutputStream().flush();
         try {
+        
+        socket.setSoTimeout(500);
         socket.getInputStream().read(sbin);
         } catch (IOException e) {
             System.err.println("No valid response ");
-            System.exit(1);
+            /*System.exit(1);*/
+            out.close();
+            in.close();
+            read.close();
+            socket.close();
+            return sbin;
+            
+            
         }
 
         out.close();

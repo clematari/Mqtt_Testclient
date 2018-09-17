@@ -51,6 +51,7 @@ public void doDemo() {
 	    MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setUserName(Mqtt_user);
         connOpts.setPassword(Mqtt_pwd.toCharArray());
+        connOpts.setCleanSession(true);
         client.connect(connOpts);
         System.out.println (MqttClient.generateClientId());
         client.setCallback(this);
@@ -77,6 +78,7 @@ public void sendStatusAnswer(String topic2, byte[] outb) {
 	    MqttConnectOptions connOpts2 = new MqttConnectOptions();
         connOpts2.setUserName(Mqtt_user);
         connOpts2.setPassword(Mqtt_pwd.toCharArray());
+        connOpts2.setCleanSession(true);
         client2.connect(connOpts2);
 	    
 	    MqttMessage message2 = new MqttMessage();
@@ -102,7 +104,7 @@ public void connectionLost(Throwable cause) {
 public void messageArrived(String topic, MqttMessage message)
         throws Exception {
 	String outmessage = message.toString();
-	System.out.println(topic + "-" + outmessage);
+	System.out.println("arrived:" + topic + " payload:" + outmessage);
 	
 	String[] topicString = topic.split("/");
 	
@@ -119,7 +121,7 @@ public void messageArrived(String topic, MqttMessage message)
     String  topic_answer="";
     boolean PHCBit;
     
-    System.out.println(topicString[1]);
+   /* System.out.println(topicString[1]); */
    
 	switch (topicString[1]) {
 
