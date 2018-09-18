@@ -42,7 +42,7 @@ public static void main(String[] args) {
 }
 
 public void doDemo() {
-	String topic = "phc/";
+	String topic = "phc/amd/";
 
 	
 	
@@ -148,7 +148,7 @@ public void messageArrived(String topic, MqttMessage message)
 				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
 				String PHCStatusStr = String.valueOf(PHCStatusByte[0]);
 
-				topic_answer= "phc/status/amd/"+(amdNr-amd0);
+				topic_answer= "phc/status/amdstatus/"+(amdNr-amd0);
 				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
 				
 				topic_answer= "phc/status/amd/"+(amdNr-amd0)+"/"+Chan;
