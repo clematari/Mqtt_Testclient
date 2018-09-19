@@ -101,6 +101,11 @@ public void connectionLost(Throwable cause) {
 	System.out.println ("Connection lost");
 }
 
+public static String byteToInt(byte b) {
+    int i = b & 0xFF;
+    return Integer.toString(i);
+}
+
 public void messageArrived(String topic, MqttMessage message)
         throws Exception {
 	String outmessage = message.toString();
@@ -119,7 +124,8 @@ public void messageArrived(String topic, MqttMessage message)
     int Chan 	= 0;
     byte[] PHCStatusByte = new byte[1];
     String  topic_answer="";
-    boolean PHCBit;
+    byte PHCByte = 0;
+    String PHCStatusStr="";
     
    /* System.out.println(topicString[1]); */
    
@@ -146,7 +152,8 @@ public void messageArrived(String topic, MqttMessage message)
 	/* com2phc.PrintInOut (testb); */
 				
 				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
-				String PHCStatusStr = String.valueOf(PHCStatusByte[0]);
+				PHCByte = PHCStatusByte[0];
+				PHCStatusStr = byteToInt(PHCByte);
 
 				topic_answer= "phc/status/amdstatus/"+(amdNr-amd0);
 				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
@@ -178,15 +185,16 @@ public void messageArrived(String topic, MqttMessage message)
 			
 			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 			
- /* com2phc.PrintInOut (testb); */
+			 /* com2phc.PrintInOut (testb); */
 
 				
-		}
+				}
 		break;
 	}
 			
 		
-	}
+}
+
 
     
  
