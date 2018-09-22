@@ -30,6 +30,8 @@ public class PahoDemo1 implements MqttCallback {
 	final static String Mqtt_pwd = "3313";
 	
 	byte[]	testb = new byte[20];
+	int sizeold = 11;
+	int sizenew = 11;
 	
 	MqttClient client;
 	

@@ -9,6 +9,8 @@ import java.net.UnknownHostException;
 
 public class com2phc {
 	
+	private static final int AMD_RETURN_POSITION = 12;
+
 	public static byte[] SendtoPHCMaster(byte[] data) throws IOException{
 	       
     	byte[] sb;
@@ -49,7 +51,8 @@ public class com2phc {
             in.close();
             read.close();
             socket.close();
-            return sbin;
+       
+    		return sbin;
             
             
         }
@@ -58,7 +61,6 @@ public class com2phc {
         in.close();
         read.close();
         socket.close();
-   
         return sbin;
     }
 	
@@ -93,16 +95,19 @@ public class com2phc {
 		OutBuf[8] = (byte) LSB;         // Least significant "byte"
 		OutBuf[9] = (byte) MSB;  		// Most significant "byte"
 		OutBuf[10] = (byte) 0xc1; 		// Frame Start	
-		
-	    return OutBuf;
+	
+		byte[] OutBuf_new = OutBuf;
+		int sizenew_local = padbuffer(OutBuf,OutBuf_new,11);
+	
+	    return OutBuf_new;
 	    }
 
 	   static public int CRC16(byte[] data){
 	           
 	   
-		   int crc = 0xffff;		//Startwert
-		   int polynomial = 0x8408; //Polynom
-
+	   int crc = 0xffff;		//Startwert		   
+	   int polynomial = 0x8408; //Polynom
+	   
 	   byte[] bytes = data;
 
 	   for (byte b : bytes) {
@@ -162,7 +167,10 @@ public class com2phc {
 	public static byte getPHCStatusByte(byte[] in) {
 	byte outbyte = 0;
 	
-	outbyte = in[in.length -12];
+	outbyte = in[in.length - AMD_RETURN_POSITION];
+	if (outbyte == (byte) 0x7D) {
+		outbyte = (byte) (in[in.length - AMD_RETURN_POSITION -1] ^ (byte) 0x20) ;
+	}
 	
 	return outbyte;
 	}
@@ -170,5 +178,51 @@ public class com2phc {
 	public static int unsignedToBytes(byte b) {
 		    return b & 0xFF;
 		  }
+	
+	public static int padbuffer(byte[] buf_src,byte[] buf_dst, int size) {
+	       
+    	int oldpos;
+    	int newsize = size;
+    	
+	  for (int i=1; i<size-1; i++) // check only between start and stop byte
+	    {
+	        if (buf_src[i] == 0x7D || buf_src[i] == 0xC0 || buf_src[i] == 0xC1)
+	        {
+	            newsize++;
+	        }
+	    }
+	  if (size == newsize) // no padding necessary?
+	    {
+	        return newsize; // just leave it
+	    }
+	    
+	    // second pass: go backwards and do the padding.
+	    //  this way no extra work buffer is needed
+
+	    buf_dst[0] = buf_src[0]; // copy first byte, should be 0xC0
+	    buf_dst[newsize-1] = buf_src[size-1]; // copy last byte, should be 0xC1
+	    oldpos = size - 2; // start in front of that last byte
+	    for (int i=newsize-2; i>1; i--)
+	    {
+	        if (buf_src[oldpos] == 0x7D || buf_src[oldpos] == 0xC0 || buf_src[oldpos] == 0xC1)
+	        {
+	            buf_dst[i] = (byte) (buf_src[oldpos] ^ (byte) 0x20);
+	            i--;
+	            buf_dst[i] = 0x7D;
+	        }
+	        else
+	        {
+	            buf_dst[i] = buf_src[oldpos];
+	        }
+	        oldpos--;
+	    }
+	    // now, oldpos should be 1
+
+	    size = newsize;
+
+	    return newsize; // OK
+}
+	
+	
 	
 }
