@@ -24,6 +24,7 @@ public class PahoDemo1 implements MqttCallback {
 	
 	final static int amd0 = 	(byte)0x40;
 	final static int dim0 = 	(byte)0xA0;
+	final static int emd0=		(byte)0x00;
 	
 	final static String Mqtt_adr = "tcp://10.0.0.25:1883";
 	final static String Mqtt_user = "openhabian";
@@ -44,7 +45,7 @@ public static void main(String[] args) {
 }
 
 public void doDemo() {
-	String topic = "phc/amd/";
+	String topic = "phc/";
 
 	
 	
@@ -157,10 +158,10 @@ public void messageArrived(String topic, MqttMessage message)
 				PHCByte = PHCStatusByte[0];
 				PHCStatusStr = byteToInt(PHCByte);
 
-				topic_answer= "phc/status/amdstatus/"+(amdNr-amd0);
+				topic_answer= "phcstatus/amdstatus/"+(amdNr-amd0);
 				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
 				
-				topic_answer= "phc/status/amd/"+(amdNr-amd0)+"/"+Chan;
+				topic_answer= "phcstatus/amd/"+(amdNr-amd0)+"/"+Chan;
 				
 		
 				if (checkBit(PHCStatusByte[0],Chan))
@@ -192,6 +193,25 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				}
 		break;
+		
+		case "emd":{
+			
+			amdNr = Integer.parseInt(topicString[2]);
+			Chan = Integer.parseInt(topicString[3]);
+			
+			amdNr = amdNr + emd0; 
+			
+			action = dim_info;
+			
+			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			
+			 com2phc.PrintInOut (testb);
+
+				
+				}
+		break;
+		
+		
 	}
 			
 		
