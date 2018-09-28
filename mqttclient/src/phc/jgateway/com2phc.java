@@ -168,7 +168,7 @@ public class com2phc {
 	byte outbyte = 0;
 	
 	outbyte = in[in.length - AMD_RETURN_POSITION];
-	if (outbyte == (byte) 0x7D) {
+	if ((outbyte == (byte) 0x7D) || (outbyte == (byte) 0xC0) || (outbyte == (byte) 0xC1))  {
 		outbyte = (byte) (in[in.length - AMD_RETURN_POSITION -1] ^ (byte) 0x20) ;
 	}
 	
