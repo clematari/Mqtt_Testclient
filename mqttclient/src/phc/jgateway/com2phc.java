@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 public class com2phc {
 	
-	private static final int AMD_RETURN_POSITION = 12;
+	private static final int AMD_RETURN_POSITION = 8;
 
 	public static byte[] SendtoPHCMaster(byte[] data) throws IOException{
 	       
@@ -167,9 +167,9 @@ public class com2phc {
 	public static byte getPHCStatusByte(byte[] in) {
 	byte outbyte = 0;
 	
-	outbyte = in[in.length - AMD_RETURN_POSITION];
+	outbyte = in[AMD_RETURN_POSITION];
 	if ((outbyte == (byte) 0x7D) || (outbyte == (byte) 0xC0) || (outbyte == (byte) 0xC1))  {
-		outbyte = (byte) (in[in.length - AMD_RETURN_POSITION -1] ^ (byte) 0x20) ;
+		outbyte = (byte) (in[AMD_RETURN_POSITION+1] ^ (byte) 0x20) ;
 	}
 	
 	return outbyte;
@@ -186,7 +186,7 @@ public class com2phc {
     	
 	  for (int i=1; i<size-1; i++) // check only between start and stop byte
 	    {
-	        if (buf_src[i] == 0x7D || buf_src[i] == 0xC0 || buf_src[i] == 0xC1)
+	        if ((buf_src[i] == 0x7D) || (buf_src[i] == 0xC0) || (buf_src[i] == 0xC1))
 	        {
 	            newsize++;
 	        }

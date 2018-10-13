@@ -152,8 +152,8 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 				
-	/* com2phc.PrintInOut (testb); */
-				
+				com2phc.PrintInOut (testb); 
+				 
 				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
 				PHCByte = PHCStatusByte[0];
 				PHCStatusStr = byteToInt(PHCByte);
@@ -164,7 +164,7 @@ public void messageArrived(String topic, MqttMessage message)
 				topic_answer= "phcstatus/amd/"+(amdNr-amd0)+"/"+Chan;
 				
 		
-				if (checkBit(PHCStatusByte[0],Chan))
+				if (checkBit(PHCByte,Chan))
 					{
 						sendStatusAnswer(topic_answer, "ON".getBytes());}
 				else
@@ -188,10 +188,29 @@ public void messageArrived(String topic, MqttMessage message)
 			
 			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
 			
-			 /* com2phc.PrintInOut (testb); */
+			 com2phc.PrintInOut (testb); 
+			 
+				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
+				PHCByte = PHCStatusByte[0];
+				PHCStatusStr = byteToInt(PHCByte);
+
+				topic_answer= "phcstatus/dimstatus/"+(amdNr-dim0);
+				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
+				
+				topic_answer= "phcstatus/dim/"+(amdNr-dim0)+"/"+Chan;
+				
+		
+				if (checkBit(PHCByte,Chan))
+					{
+						sendStatusAnswer(topic_answer, "ON".getBytes());}
+				else
+					{ 
+						sendStatusAnswer(topic_answer, "OFF".getBytes());}
+				
+					}
 
 				
-				}
+				
 		break;
 		
 		case "emd":{
