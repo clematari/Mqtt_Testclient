@@ -14,11 +14,11 @@ public class com2phc {
 	public static byte[] SendtoPHCMaster(byte[] data) throws IOException{
 	       
     	byte[] sb;
-    	byte[] sbin = new byte[20];
+    	byte[] sbin = new byte[32];
      	
     	
     	sb = Convert2PHC(data);
-    	/* PrintInOut (sb); */
+    	PrintInOut (sb); 
     	
     	Socket socket = null;
         PrintWriter out = null;
@@ -68,10 +68,10 @@ public class com2phc {
         
 	    byte[] PHCBuf = data;
 	    byte[] CRCBuf = new byte[7];
-	    byte[] OutBuf = new byte[20];
-	    int Checksumme;
-	    int LSB;
-	    int MSB;
+	    byte[] OutBuf = new byte[32];
+	    
+	    byte LSB;
+	    byte MSB;
 	    
 		OutBuf[0] = (byte) 0xc0; // Frame Start	
 		OutBuf[1] = (byte) 0xfe;  // from RS232
@@ -79,34 +79,70 @@ public class com2phc {
 		OutBuf[3] = (byte) 0x06;  // opcode: PHC packet
 		OutBuf[4] = (byte) 0x00;  // sequence #
 		
+		int len=1;
+		boolean toggle = false;
 		OutBuf[5] = PHCBuf[0]; //
-		OutBuf[6] = PHCBuf[1];
+		//OutBuf[6] = PHCBuf[1];
+		OutBuf[6] = (byte) (toggle ? (len | 0x80) : len); // 0x80:
 		OutBuf[7] = PHCBuf[2];
 		
 		for (int i = 0; i <7; i++) {
 			CRCBuf[i] = OutBuf[i+1];
 		};
 		
-		Checksumme = CRC16(CRCBuf);
+		// Checksumme = CRC16(CRCBuf);
 		
-		LSB = (Checksumme & 0xFF);
-		MSB = ((Checksumme & 0xFF00) >>> 8);
+		short Checksumme = (short) 0xFFFF;
 		
-		OutBuf[8] = (byte) LSB;         // Least significant "byte"
-		OutBuf[9] = (byte) MSB;  		// Most significant "byte"
-		OutBuf[10] = (byte) 0xc1; 		// Frame Start	
+		for (int i = 1; i <8; i++) {
+		Checksumme = crc16Update(Checksumme, OutBuf[i]);
+		};
+		
+		Checksumme ^= 0xFFFF;
+		LSB = (byte)(Checksumme & 0xFF);
+		MSB = (byte)((Checksumme >> 8) & 0xFF);
+		
+		//Padding check
+		
+		
+		if (MSB == (byte)0xC0 || MSB == (byte)0xC1 || MSB == (byte)0x7D)
+		{
+			OutBuf[8] = LSB;         // Least significant "byte"
+			OutBuf[9] = (byte) 0x7D;
+			OutBuf[10] = (byte) (MSB ^ (byte) 0x20);  		// Most significant "byte"
+			OutBuf[11]= (byte) 0xc1; 		// Frame Start	
+		}
+		else
+		{
+			OutBuf[8] = LSB;         // Least significant "byte"
+			OutBuf[9] = MSB;  		// Most significant "byte"
+			OutBuf[10] = (byte) 0xc1; 		// Frame Start	
+		}
+		
+		
 	
+		
+		
 		byte[] OutBuf_new = OutBuf;
-		int sizenew_local = padbuffer(OutBuf,OutBuf_new,11);
-	
+		
 	    return OutBuf_new;
 	    }
+	
+	private static short crc16Update(short crc, byte data) {
+        data ^= crc & 0xFF;
+        data ^= data << 4;
+        short data16 = data;
 
-	   static public int CRC16(byte[] data){
+        crc = (short) (((data16 << 8) | (((crc >> 8) & 0xFF) & 0xFF)) ^ ((data >> 4) & 0xF)
+                ^ ((data16 << 3) & 0b11111111111));
+        return crc;
+    }
+
+	   static public short CRC16(byte[] data){
 	           
 	   
-	   int crc = 0xffff;		//Startwert		   
-	   int polynomial = 0x8408; //Polynom
+	   short crc = (short) 0xffff;		//Startwert		   
+	   short polynomial = (short) 0x8408; //Polynom
 	   
 	   byte[] bytes = data;
 
@@ -115,9 +151,9 @@ public class com2phc {
 	       
 	       for (int i = 0; i < 8; i++) {
 	           if ((crc & 0x0001) != 0) {
-	               crc = (crc >>> 1) ^ polynomial;
+	               crc = (short) ((crc >>> 1) ^ polynomial);
 	           } else {
-	               crc = (crc >>> 1);
+	               crc = (short) (crc >>> 1);
 	           }
 	       }
 	   }
@@ -129,15 +165,15 @@ public class com2phc {
 	   public static byte[] WriteAMDChannel (int AMD, int phcCmd, int Channel){
 	   
 	   	
-		int combibyte1 = (byte) (phcCmd); // lower 4 bits sind commando
-		int combibyte2 = (Channel << 5); // channel sind binär codiert in bit 2-4, daher xxxx 111x  0,2,4,6,a,c,e
+		short combibyte1 = (byte) (phcCmd); // lower 4 bits sind commando
+		short combibyte2 = (byte) (Channel << 5); // channel sind binär codiert in bit 2-4, daher xxxx 111x  0,2,4,6,a,c,e
 
 		
 	   	byte combibyte = (byte) (combibyte1 + combibyte2);
 	   	Channel = unsignedToBytes(combibyte);
 		   
 		byte[] Code1 = {(byte)AMD, (byte)0x01, (byte)Channel};
-		byte[] ReturnCode = new byte[20];
+		byte[] ReturnCode = new byte[32];
 		try {
 			ReturnCode = SendtoPHCMaster(Code1);
 		} catch (IOException e1) {
@@ -179,9 +215,11 @@ public class com2phc {
 		    return b & 0xFF;
 		  }
 	
-	public static int padbuffer(byte[] buf_src,byte[] buf_dst, int size) {
-	       
+	public static byte[] padbuffer(byte[] buf_src) {
+	    
+		byte[] buf_dst = buf_src;
     	int oldpos;
+    	int size = buf_src.length;
     	int newsize = size;
     	
 	  for (int i=1; i<size-1; i++) // check only between start and stop byte
@@ -193,7 +231,7 @@ public class com2phc {
 	    }
 	  if (size == newsize) // no padding necessary?
 	    {
-	        return newsize; // just leave it
+	        return buf_dst; // just leave it
 	    }
 	    
 	    // second pass: go backwards and do the padding.
@@ -220,7 +258,7 @@ public class com2phc {
 
 	    size = newsize;
 
-	    return newsize; // OK
+	    return buf_dst; // OK
 }
 	
 	

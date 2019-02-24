@@ -26,11 +26,11 @@ public class PahoDemo1 implements MqttCallback {
 	final static int dim0 = 	(byte)0xA0;
 	final static int emd0=		(byte)0x00;
 	
-	final static String Mqtt_adr = "tcp://10.0.0.25:1883";
+	final static String Mqtt_adr = "tcp://10.0.0.143:1883";
 	final static String Mqtt_user = "openhabian";
 	final static String Mqtt_pwd = "3313";
 	
-	byte[]	testb = new byte[20];
+	byte[]	testb = new byte[32];
 	int sizeold = 11;
 	int sizenew = 11;
 	
