@@ -102,7 +102,7 @@ public class com2phc {
 		LSB = (byte)(Checksumme & 0xFF);
 		MSB = (byte)((Checksumme >> 8) & 0xFF);
 		
-		//Padding check
+		//Padding check 2 
 		
 		
 		if (MSB == (byte)0xC0 || MSB == (byte)0xC1 || MSB == (byte)0x7D)
