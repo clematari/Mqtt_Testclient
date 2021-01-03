@@ -104,6 +104,9 @@ public class com2phc {
 		
 		//Padding check 2 
 		
+		OutBuf[8] = LSB;         			// Least significant "byte"
+		OutBuf[9] = MSB;  					// Most significant "byte"
+		OutBuf[10] = (byte) 0xC1; 			// Frame Start	
 		
 		if (MSB == (byte)0xC0 || MSB == (byte)0xC1 || MSB == (byte)0x7D)
 		{
@@ -112,13 +115,8 @@ public class com2phc {
 			OutBuf[10] = (byte) (MSB ^ (byte) 0x20);  	// Most significant "byte"
 			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
 		}
-		else
-		{
-			OutBuf[8] = LSB;         			// Least significant "byte"
-			OutBuf[9] = MSB;  					// Most significant "byte"
-			OutBuf[10] = (byte) 0xC1; 			// Frame Start	
-		}
 		
+				
 		if (LSB == (byte)0xC0 || LSB == (byte)0xC1 || LSB == (byte)0x7D)
 		{
 			OutBuf[8] = (byte) 0x7D;;         			// Least significant "byte"
@@ -126,12 +124,7 @@ public class com2phc {
 			OutBuf[10] = MSB;  							// Most significant "byte"
 			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
 		}
-		else
-		{
-			OutBuf[8] = LSB;         			// Least significant "byte"
-			OutBuf[9] = MSB;  					// Most significant "byte"
-			OutBuf[10] = (byte) 0xC1; 			// Frame Start	
-		}
+		
 	
 		
 		
