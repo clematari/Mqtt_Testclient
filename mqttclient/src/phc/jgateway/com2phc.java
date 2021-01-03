@@ -102,7 +102,7 @@ public class com2phc {
 		LSB = (byte)(Checksumme & 0xFF);
 		MSB = (byte)((Checksumme >> 8) & 0xFF);
 		
-		//Padding check 2 
+		//Padding check
 		
 		OutBuf[8] = LSB;         			// Least significant "byte"
 		OutBuf[9] = MSB;  					// Most significant "byte"
