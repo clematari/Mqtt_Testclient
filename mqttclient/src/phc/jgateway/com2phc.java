@@ -107,19 +107,31 @@ public class com2phc {
 		
 		if (MSB == (byte)0xC0 || MSB == (byte)0xC1 || MSB == (byte)0x7D)
 		{
-			OutBuf[8] = LSB;         // Least significant "byte"
+			OutBuf[8] = LSB;         					// Least significant "byte"
 			OutBuf[9] = (byte) 0x7D;
-			OutBuf[10] = (byte) (MSB ^ (byte) 0x20);  		// Most significant "byte"
-			OutBuf[11]= (byte) 0xc1; 		// Frame Start	
+			OutBuf[10] = (byte) (MSB ^ (byte) 0x20);  	// Most significant "byte"
+			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
 		}
 		else
 		{
-			OutBuf[8] = LSB;         // Least significant "byte"
-			OutBuf[9] = MSB;  		// Most significant "byte"
-			OutBuf[10] = (byte) 0xc1; 		// Frame Start	
+			OutBuf[8] = LSB;         			// Least significant "byte"
+			OutBuf[9] = MSB;  					// Most significant "byte"
+			OutBuf[10] = (byte) 0xC1; 			// Frame Start	
 		}
 		
-		
+		if (LSB == (byte)0xC0 || LSB == (byte)0xC1 || LSB == (byte)0x7D)
+		{
+			OutBuf[8] = (byte) 0x7D;;         			// Least significant "byte"
+			OutBuf[9] = (byte) (LSB ^ (byte) 0x20);
+			OutBuf[10] = MSB;  							// Most significant "byte"
+			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
+		}
+		else
+		{
+			OutBuf[8] = LSB;         			// Least significant "byte"
+			OutBuf[9] = MSB;  					// Most significant "byte"
+			OutBuf[10] = (byte) 0xC1; 			// Frame Start	
+		}
 	
 		
 		
@@ -224,7 +236,7 @@ public class com2phc {
     	
 	  for (int i=1; i<size-1; i++) // check only between start and stop byte
 	    {
-	        if ((buf_src[i] == 0x7D) || (buf_src[i] == 0xC0) || (buf_src[i] == 0xC1))
+	        if ((buf_src[i] == (byte)0x7D) || (buf_src[i] == (byte)0xC0) || (buf_src[i] == (byte)0xC1))
 	        {
 	            newsize++;
 	        }
@@ -242,11 +254,11 @@ public class com2phc {
 	    oldpos = size - 2; // start in front of that last byte
 	    for (int i=newsize-2; i>1; i--)
 	    {
-	        if (buf_src[oldpos] == 0x7D || buf_src[oldpos] == 0xC0 || buf_src[oldpos] == 0xC1)
+	        if (buf_src[oldpos] == (byte)0x7D || buf_src[oldpos] == (byte)0xC0 || buf_src[oldpos] == (byte)0xC1)
 	        {
 	            buf_dst[i] = (byte) (buf_src[oldpos] ^ (byte) 0x20);
 	            i--;
-	            buf_dst[i] = 0x7D;
+	            buf_dst[i] = (byte)0x7D;
 	        }
 	        else
 	        {

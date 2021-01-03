@@ -163,7 +163,7 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				topic_answer= "phcstatus/amd/"+(amdNr-amd0)+"/"+Chan;
 				
-		
+							
 				if (checkBit(PHCByte,Chan))
 					{
 						sendStatusAnswer(topic_answer, "ON".getBytes());}
