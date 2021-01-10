@@ -67,26 +67,32 @@ public class com2phc {
 	static public byte[] Convert2PHC(byte[] data){
         
 	    byte[] PHCBuf = data;
-	    byte[] CRCBuf = new byte[7];
+	    byte[] CRCBuf = new byte[9];
 	    byte[] OutBuf = new byte[32];
 	    
 	    byte LSB;
 	    byte MSB;
 	    
-		OutBuf[0] = (byte) 0xc0; // Frame Start	
-		OutBuf[1] = (byte) 0xfe;  // from RS232
-		OutBuf[2] = (byte) 0x00;  // to STM0  		
-		OutBuf[3] = (byte) 0x06;  // opcode: PHC packet
-		OutBuf[4] = (byte) 0x00;  // sequence #
+		OutBuf[0] = (byte) 0xc0; 	// Frame Start	
+		OutBuf[1] = (byte) 0xfe;  	// from RS232
+		OutBuf[2] = (byte) 0x00;  	// to STM0  		
+		OutBuf[3] = (byte) 0x06;  	// opcode: PHC packet
+		OutBuf[4] = (byte) 0x00;  	// sequence #
 		
-		int len=1;
-		boolean toggle = false;
-		OutBuf[5] = PHCBuf[0]; //
-		//OutBuf[6] = PHCBuf[1];
-		OutBuf[6] = (byte) (toggle ? (len | 0x80) : len); // 0x80:
-		OutBuf[7] = PHCBuf[2];
+													//int len=1;
+													//boolean toggle = false;
 		
-		for (int i = 0; i <7; i++) {
+		OutBuf[5] = PHCBuf[0]; 	// AMD
+		OutBuf[6] = PHCBuf[1]; 	// Cmdlen Länge der commandos normal 1 bei Dimmproc 3
+		
+													//OutBuf[6] = (byte) (toggle ? (len | 0x80) : len); // 0x80:
+		
+		OutBuf[7] = PHCBuf[2]; 	//Channel
+		OutBuf[8] = PHCBuf[3]; 	// DimValue
+		OutBuf[9] = 0x05;		// Hardcoded Zeitwinkel fürs dimmen 5 
+		
+		int BufSize = OutBuf[6]+6; 
+		for (int i = 0; i <BufSize; i++) {
 			CRCBuf[i] = OutBuf[i+1];
 		};
 		
@@ -94,7 +100,7 @@ public class com2phc {
 		
 		short Checksumme = (short) 0xFFFF;
 		
-		for (int i = 1; i <8; i++) {
+		for (int i = 1; i <(BufSize+1); i++) {
 		Checksumme = crc16Update(Checksumme, OutBuf[i]);
 		};
 		
@@ -104,25 +110,25 @@ public class com2phc {
 		
 		//Padding check
 		
-		OutBuf[8] = LSB;         			// Least significant "byte"
-		OutBuf[9] = MSB;  					// Most significant "byte"
-		OutBuf[10] = (byte) 0xC1; 			// Frame Start	
+		OutBuf[BufSize+1] = LSB;         			// Least significant "byte"
+		OutBuf[BufSize+2] = MSB;  					// Most significant "byte"
+		OutBuf[BufSize+3] = (byte) 0xC1; 			// Frame Start	
 		
 		if (MSB == (byte)0xC0 || MSB == (byte)0xC1 || MSB == (byte)0x7D)
 		{
-			OutBuf[8] = LSB;         					// Least significant "byte"
-			OutBuf[9] = (byte) 0x7D;
-			OutBuf[10] = (byte) (MSB ^ (byte) 0x20);  	// Most significant "byte"
-			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
+			OutBuf[BufSize+1] = LSB;         					// Least significant "byte"
+			OutBuf[BufSize+2] = (byte) 0x7D;
+			OutBuf[BufSize+3] = (byte) (MSB ^ (byte) 0x20);  	// Most significant "byte"
+			OutBuf[BufSize+4]= (byte) 0xC1; 					// Frame Start	
 		}
 		
 				
 		if (LSB == (byte)0xC0 || LSB == (byte)0xC1 || LSB == (byte)0x7D)
 		{
-			OutBuf[8] = (byte) 0x7D;;         			// Least significant "byte"
-			OutBuf[9] = (byte) (LSB ^ (byte) 0x20);
-			OutBuf[10] = MSB;  							// Most significant "byte"
-			OutBuf[11]= (byte) 0xC1; 					// Frame Start	
+			OutBuf[BufSize+1] = (byte) 0x7D;;         			// Least significant "byte"
+			OutBuf[BufSize+2] = (byte) (LSB ^ (byte) 0x20);
+			OutBuf[BufSize+3] = MSB;  							// Most significant "byte"
+			OutBuf[BufSize+4]= (byte) 0xC1; 					// Frame Start	
 		}
 		
 	
@@ -167,7 +173,7 @@ public class com2phc {
 	   return crc ^= 0xFFFF ;
 	   }
 	   
-	   public static byte[] WriteAMDChannel (int AMD, int phcCmd, int Channel){
+	   public static byte[] WriteAMDChannel (int AMD, int phcCmd, int Channel, byte Value, byte Cmdlen ){
 	   
 	   	
 		short combibyte1 = (byte) (phcCmd); // lower 4 bits sind commando
@@ -177,7 +183,7 @@ public class com2phc {
 	   	byte combibyte = (byte) (combibyte1 + combibyte2);
 	   	Channel = unsignedToBytes(combibyte);
 		   
-		byte[] Code1 = {(byte)AMD, (byte)0x01, (byte)Channel};
+		byte[] Code1 = {(byte)AMD, (byte)Cmdlen, (byte)Channel, (byte)Value};
 		byte[] ReturnCode = new byte[32];
 		try {
 			ReturnCode = SendtoPHCMaster(Code1);

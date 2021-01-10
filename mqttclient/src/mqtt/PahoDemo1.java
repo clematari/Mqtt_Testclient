@@ -21,6 +21,7 @@ public class PahoDemo1 implements MqttCallback {
 	final static int dim_ausschalten 	= 4;
 	final static int dim_umschalten 	= 11;
 	final static int dim_info 			= 1;
+	final static int dim_setze_wert		= 22;
 	
 	final static int amd0 = 	(byte)0x40;
 	final static int dim0 = 	(byte)0xA0;
@@ -125,6 +126,9 @@ public void messageArrived(String topic, MqttMessage message)
     int action 	= 0;
     int amdNr 	= 0;
     int Chan 	= 0;
+    byte Value	= 0;
+    byte Cmdlen	= 0x01;
+    
     byte[] PHCStatusByte = new byte[1];
     String  topic_answer="";
     byte PHCByte = 0;
@@ -150,7 +154,7 @@ public void messageArrived(String topic, MqttMessage message)
 				
 				
 				
-				testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+				testb = com2phc.WriteAMDChannel(amdNr , action, Chan, (byte)0x00, Cmdlen);
 				
 				com2phc.PrintInOut (testb); 
 				 
@@ -186,7 +190,46 @@ public void messageArrived(String topic, MqttMessage message)
 			if (outmessage.equals("2")) action = dim_umschalten;
 			if (outmessage.equals("3")) action = dim_info;
 			
-			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan, (byte)0x00, Cmdlen);
+			
+			 com2phc.PrintInOut (testb); 
+			 
+				PHCStatusByte[0]=com2phc.getPHCStatusByte(testb);
+				PHCByte = PHCStatusByte[0];
+				PHCStatusStr = byteToInt(PHCByte);
+
+				topic_answer= "phcstatus/dimstatus/"+(amdNr-dim0);
+				sendStatusAnswer(topic_answer, PHCStatusStr.getBytes());
+				
+				topic_answer= "phcstatus/dim/"+(amdNr-dim0)+"/"+Chan;
+				
+		
+				if (checkBit(PHCByte,Chan))
+					{
+						sendStatusAnswer(topic_answer, "ON".getBytes());}
+				else
+					{ 
+						sendStatusAnswer(topic_answer, "OFF".getBytes());}
+				
+					}
+
+				
+				
+		break;
+		
+		// Dimmen mit Prozentangabe phc/dim/0/0/ 100(0%) bis 200(100%)
+		case "dimproz":{
+			
+			amdNr = Integer.parseInt(topicString[2]);
+			Chan = Integer.parseInt(topicString[3]);
+			
+			amdNr = amdNr + dim0; 
+			
+			Value = (byte) (Double.parseDouble(outmessage) * 2.55);
+			Cmdlen = (byte)0x03;
+			action = dim_setze_wert;
+			
+			testb = com2phc.WriteAMDChannel(amdNr , action, Chan, Value, Cmdlen);
 			
 			 com2phc.PrintInOut (testb); 
 			 
@@ -222,7 +265,7 @@ public void messageArrived(String topic, MqttMessage message)
 			
 			action = dim_info;
 			
-			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan);
+			 testb = com2phc.WriteAMDChannel(amdNr , action, Chan, (byte)0x00, Cmdlen);
 			
 			 com2phc.PrintInOut (testb);
 
